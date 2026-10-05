@@ -752,12 +752,9 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,h
 function mic(){
  if(!SR){msg('b','Este navegador no permite dictar desde la página. Usá el micrófono del teclado del celular en el campo de texto: se anota igual.');return}
  if(hearing){rec.stop();return}
- rec=new SR();rec.lang='es-AR';rec.interimResults=true;rec.continuous=true;let fin='';
+ rec=new SR();rec.lang='es-AR';rec.interimResults=true;rec.continuous=false;let fin='';
  rec.maxAlternatives=1;
- rec.onresult=e=>{const nz=t=>t.toLowerCase().replace(/[.,;¿?¡!]/g,'').replace(/\s+/g,' ').trim(),out=[];
-  for(let i=0;i<e.results.length;i++){const seg=e.results[i][0].transcript.trim(),n=nz(seg);if(!n)continue;const last=out.length?nz(out[out.length-1]):'';
-   if(last&&n.startsWith(last))out[out.length-1]=seg;else if(last&&last.startsWith(n))continue;else out.push(seg)}
-  $('#txt').value=out.join(' ')};
+ rec.onresult=e=>{const r=e.results[e.results.length-1];$('#txt').value=r?r[0].transcript.trim():''};
  rec.onerror=e=>{hearing=false;$('#mc').textContent='🎤';msg('b',/not-allowed|service/.test(e.error)?'No pude usar el micrófono desde esta página. Probá con el micrófono del teclado.':'Falló el dictado ('+e.error+'). Probá de nuevo.')};
  rec.onend=()=>{hearing=false;$('#mc').textContent='🎤';const v=$('#txt').value.trim();if(v){$('#txt').value='';handle(splitVoice(numWords(v)))}};
  try{rec.start();hearing=true;$('#mc').textContent='⏹'}catch(e){msg('b','No pude iniciar el micrófono.')}}
@@ -779,4 +776,5 @@ $('#fm').addEventListener('submit',e=>{e.preventDefault();const v=$('#txt').valu
 msg('b','Contame qué comiste y lo sumo a tu objetivo. Ej: "200 g pollo cocido, 2 huevos, 1 taza de arroz cocido". Si no especificás crudo o cocido, asumo cocido (salvo el arroz, que es tu Molinos Ala y lo asumo crudo). Tocá un alimento del registro para editarlo o borrarlo, o escribí "borrar último".');
 render();
 </script><script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
+<div class="mu" id="ver" style="text-align:center;font-size:11px;padding:8px 0 16px">v4</div>
 </body></html>
