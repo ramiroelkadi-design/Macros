@@ -47,9 +47,10 @@ h3{font-size:14px;color:var(--mu);margin:12px 0 2px;font-weight:600}
 .opt{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;margin:8px 0}.opt div{white-space:pre-wrap}.opt .add{margin-top:8px;padding:8px 12px}
 #bkp button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 12px}
 #bk{width:100%;margin-top:6px;font:12px monospace;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px}
+#food button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 12px}#food .pri{background:var(--ac);color:#fff;border-color:var(--ac)}#food input,#food select{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px;min-width:0;width:100%}#food .row2 input{flex:1}#food .frm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}#food .frm label{font-size:12px;color:var(--mu);display:flex;flex-direction:column;gap:2px}#food .frm .w{grid-column:1/-1}#food .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#food .bad{color:var(--bad);font-size:13px;margin-top:6px}
 </style></head><body>
 <div id="app">
-<header><div class="nav"><button id="pv" aria-label="Día anterior">‹</button><button id="dl" class="dl"></button><button id="nx" aria-label="Día siguiente">›</button><button id="hb">Historial</button><button id="sb">Sugerir</button></div><div class="card" id="sum">
+<header><div class="nav"><button id="pv" aria-label="Día anterior">‹</button><button id="dl" class="dl"></button><button id="nx" aria-label="Día siguiente">›</button><button id="hb">Historial</button><button id="sb">Sugerir</button><button id="fb">Alimentos</button></div><div class="card" id="sum">
  <div class="top"><div><span class="big" id="kc">0</span> <span class="mu" id="kg"></span></div><div class="mu" id="kr"></div></div>
  <div class="bar"><i id="kb"></i></div>
  <div class="mac" id="mac"></div>
@@ -72,7 +73,7 @@ h3{font-size:14px;color:var(--mu);margin:12px 0 2px;font-weight:600}
  <div class="row2"><input id="st" autocomplete="off" placeholder="Ej: 300 g salmón crudo"><button id="sgo">Calcular</button></div>
  <h3>Completar con un alimento que elijas (opcional)</h3>
  <div class="row2"><input id="sf" autocomplete="off" placeholder="Ej: papa, arroz crudo, palta"></div>
- <div id="so"></div></div></div>
+ <div id="so"></div></div><div id="food" hidden></div></div>
 <form id="fm"><input id="txt" autocomplete="off" placeholder="Ej: 200g pollo cocido, 2 huevos, 1 taza arroz"><button type="button" id="mc" aria-label="Dictar por voz">🎤</button><button>Enviar</button></form>
 </div>
 <script>
@@ -629,9 +630,77 @@ function sugRender(){
   b.onclick=()=>{[...base,...parts.map(([e,g])=>mk(e,g))].forEach(x=>items().push({...x,id:Date.now()+Math.random()}));save();view='day';render()};
   d.append(b);o.append(d)}
  if(!seen.size)o.append(el('div','mu','No hay cómo sumar más sin pasarte de calorías o de algún macro.'))}
+
+/* ---- Mis alimentos: editar valores y agregar alimentos propios ---- */
+function applyCF(){
+ const cf=S.cf||(S.cf={over:{},add:[]});cf.over=cf.over||{};cf.add=cf.add||[];
+ for(let i=DB.length-1;i>=0;i--)if(DB[i].cust)DB.splice(i,1);
+ DB.forEach(e=>{if(!e.o0)e.o0={k:e.k,p:e.p,c:e.c,f:e.f,u:e.u,cu:e.cu,tz:e.tz};Object.assign(e,e.o0,cf.over[e.al[0]+'|'+e.st]||{})});
+ cf.add.slice().reverse().forEach(a=>DB.unshift({al:a.al,st:a.st,k:a.k,p:a.p,c:a.c,f:a.f,u:a.u||0,cu:a.cu||0,tz:a.tz||0,cust:true}));
+}
+applyCF();
+let foodEdit=null,foodQ='',foodDel=false;
+const STL={n:'',c:' cocido',r:' crudo'},fkey=e=>e.al[0]+'|'+e.st;
+function foodRender(){
+ const h=$('#food');h.textContent='';
+ h.append(el('h3','','Mis alimentos'),el('div','mu','Valores por 100 g. Lo que cambies vale para lo que cargues de ahora en adelante; los alimentos ya cargados no se modifican.'));
+ const top=el('div','row2'),q=el('input');q.placeholder='Buscar alimento';q.value=foodQ;q.autocomplete='off';
+ const nb=el('button','',foodEdit==='new'?'Cancelar':'+ Nuevo');nb.type='button';
+ nb.onclick=()=>{foodEdit=foodEdit==='new'?null:'new';foodDel=false;foodRender()};
+ top.append(q,nb);h.append(top);
+ if(foodEdit==='new')h.append(foodForm(null));
+ const list=el('div');h.append(list);foodList(list);
+ q.oninput=()=>{foodQ=q.value;foodList(list)};
+}
+function foodList(list){
+ list.textContent='';const t=norm(foodQ.trim());
+ const L=DB.filter(e=>!t||e.al.some(a=>a.includes(t))).sort((a,b)=>(b.cust?1:0)-(a.cust?1:0)||a.al[0].localeCompare(b.al[0]));
+ if(!L.length)list.append(el('div','mu','No hay alimentos que coincidan. Podés agregarlo con “+ Nuevo”.'));
+ L.slice(0,80).forEach(e=>{
+  const ed=!e.cust&&!!(S.cf.over[fkey(e)]);
+  const d=el('div','opt'),n=el('div','',e.al[0]+STL[e.st]);n.style.fontWeight='600';
+  d.append(n,el('div','mu',e.k+' kcal · P '+e.p+' · C '+e.c+' · G '+e.f+' por 100 g'+(e.cust?' · propio':ed?' · editado':'')));
+  if(foodEdit===fkey(e))d.append(foodForm(e));
+  else{const b=el('button','add','Editar');b.type='button';b.onclick=()=>{foodEdit=fkey(e);foodDel=false;foodRender()};d.append(b)}
+  list.append(d)});
+ if(L.length>80)list.append(el('div','mu','Mostrando 80 de '+L.length+'. Usá el buscador para acotar.'));
+}
+function foodForm(e){
+ const isNew=!e,cust=isNew||e.cust,w=el('div','frm'),F={};
+ const fld=(k,lab,val,cls)=>{const l=el('label',cls||'',lab),i=el('input');if(k==='al')i.type='text';else{i.type='number';i.step='any';i.inputMode='decimal';i.min='0'}i.value=val==null||val===0&&['u','cu','tz'].includes(k)?'':val;l.append(i);F[k]=i;w.append(l)};
+ if(cust){fld('al','Nombre y otros nombres, separados por coma (el primero es el que se muestra)',isNew?'':e.al.join(', '),'w');
+  const l=el('label','','Estado'),s=el('select');[['n','No aplica'],['c','Cocido'],['r','Crudo']].forEach(([v,t])=>{const o=el('option','',t);o.value=v;s.append(o)});s.value=isNew?'n':e.st;l.append(s);F.st=s;w.append(l)}
+ fld('k','kcal',isNew?'':e.k);fld('p','Proteína (g)',isNew?'':e.p);fld('c','Carbos (g)',isNew?'':e.c);fld('f','Grasas (g)',isNew?'':e.f);
+ fld('u','g por unidad (ej. huevo = 50)',isNew?'':e.u);fld('cu','g por cucharada',isNew?'':e.cu);fld('tz','g por taza',isNew?'':e.tz);
+ const box=el('div'),err=el('div','bad');box.append(w,err);
+ const acts=el('div','acts'),btn=(t,f,c)=>{const b=el('button',c||'',t);b.type='button';b.onclick=f;acts.append(b);return b};
+ btn('Guardar',()=>{
+  const n=k=>{const v=parseFloat(String(F[k].value).replace(',','.'));return isNaN(v)||v<0?0:v};
+  const vals={k:n('k'),p:n('p'),c:n('c'),f:n('f'),u:n('u'),cu:n('cu'),tz:n('tz')};
+  if(!(vals.k>0)){err.textContent='Poné las kcal por 100 g.';return}
+  const cf=S.cf;
+  if(cust){
+   const al=[...new Set(F.al.value.split(',').map(a=>norm(a).replace(/[^a-z0-9 ]/g,'').replace(/\s+/g,' ').trim()).filter(Boolean))];
+   if(!al.length){err.textContent='Poné un nombre (letras y números).';return}
+   const st=F.st.value,key=al[0]+'|'+st;
+   if(DB.some(x=>fkey(x)===key&&x!==e)){err.textContent='Ya existe “'+al[0]+STL[st]+'”. Buscalo en la lista y editalo.';return}
+   const rec={al,st,...vals};
+   if(isNew)cf.add.push(rec);else{const i=cf.add.findIndex(a=>a.al[0]===e.al[0]&&a.st===e.st);if(i>=0)cf.add[i]=rec;else cf.add.push(rec)}
+  }else{
+   const o=e.o0;if(['k','p','c','f','u','cu','tz'].every(k=>vals[k]===o[k]))delete cf.over[fkey(e)];else cf.over[fkey(e)]=vals}
+  save();applyCF();foodEdit=null;foodDel=false;if(isNew)foodQ='';foodRender()},'pri');
+ btn('kcal desde macros',()=>{F.k.value=Math.round(4*(+String(F.p.value).replace(',','.')||0)+4*(+String(F.c.value).replace(',','.')||0)+9*(+String(F.f.value).replace(',','.')||0))});
+ if(!isNew&&!cust&&S.cf.over[fkey(e)])btn('Restaurar original',()=>{delete S.cf.over[fkey(e)];save();applyCF();foodEdit=null;foodRender()});
+ if(!isNew&&cust){const b=btn('Eliminar',()=>{if(!foodDel){foodDel=true;b.textContent='¿Seguro? Tocá de nuevo';return}
+  S.cf.add=S.cf.add.filter(a=>!(a.al[0]===e.al[0]&&a.st===e.st));save();applyCF();foodEdit=null;foodDel=false;foodRender()})}
+ btn('Cancelar',()=>{foodEdit=null;foodDel=false;foodRender()});
+ box.append(acts);if(cust)box.append(el('div','mu','Los alimentos propios no tienen micronutrientes: figuran como “sin datos” en ese panel.'));
+ return box;
+}
+
 function render(){
  $('#dl').textContent=lab(cur);$('#nx').disabled=cur>=today();$('#hb').textContent=view==='hist'?'Volver':'Historial';
- $('#dayv').hidden=view!=='day';$('#fm').hidden=view!=='day';$('#hist').hidden=view!=='hist';$('#sum').hidden=view==='hist';$('#sug').hidden=view!=='sug';$('#sb').textContent=view==='sug'?'Volver':'Sugerir';if(view==='sug')sugRender();
+ $('#dayv').hidden=view!=='day';$('#fm').hidden=view!=='day';$('#hist').hidden=view!=='hist';$('#sum').hidden=view==='hist'||view==='food';$('#food').hidden=view!=='food';$('#fb').textContent=view==='food'?'Volver':'Alimentos';if(view==='food')foodRender();$('#sug').hidden=view!=='sug';$('#sb').textContent=view==='sug'?'Volver':'Sugerir';if(view==='sug')sugRender();
  $('#lt').textContent='Registro — '+lab(cur).toLowerCase();if(view==='hist')histRender();
  const T=tot(),G=dg(cur),rem=G.k-T.k;
  $('#kc').textContent=T.k;$('#kg').textContent='/ '+G.k+' kcal';
@@ -696,8 +765,10 @@ $('#im').onclick=()=>{const b=$('#bk');b.hidden=false;b.value='';b.placeholder='
 $('#bkgo').onclick=()=>{try{const d=JSON.parse($('#bk').value);if(!d||!d.days||!d.goals)throw 0;
  S.goals=d.goals;S.dg={...(S.dg||{}),...(d.dg||{})};
  Object.entries(d.days).forEach(([k,a])=>{const l=S.days[k]||(S.days[k]=[]);a.forEach(x=>{if(!l.some(y=>y.id===x.id))l.push(x)})});
+ if(d.cf){S.cf=S.cf||{over:{},add:[]};Object.assign(S.cf.over=S.cf.over||{},d.cf.over||{});S.cf.add=S.cf.add||[];(d.cf.add||[]).forEach(a=>{if(!S.cf.add.some(y=>y.al[0]===a.al[0]&&y.st===a.st))S.cf.add.push(a)});applyCF()}
  save();$('#bk').hidden=true;$('#bkgo').hidden=true;render();msg('b','Datos importados.')}catch(e){msg('b','Los datos no son válidos. Pegá el texto completo que exportaste.')}};
 $('#sb').onclick=()=>{view=view==='sug'?'day':'sug';render()};
+$('#fb').onclick=()=>{view=view==='food'?'day':'food';foodEdit=null;foodDel=false;render()};
 $('#sn').onchange=sugRender;$('#sgo').onclick=sugRender;$('#sf').addEventListener('keydown',e=>{if(e.key==='Enter')sugRender()});$('#st').addEventListener('keydown',e=>{if(e.key==='Enter')sugRender()});
 $('#hb').onclick=()=>{view=view==='hist'?'day':'hist';render()};
 $('#fm').addEventListener('submit',e=>{e.preventDefault();const v=$('#txt').value.trim();if(!v)return;$('#txt').value='';handle(v)});
