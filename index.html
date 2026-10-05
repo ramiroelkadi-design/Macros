@@ -748,16 +748,27 @@ function numWords(t){const w=t.split(/\s+/),o=[],nk=x=>norm(x).replace(/[.,;]$/,
   o.push(String(sum));i=j-1}
  return o.join(' ')}
 const splitVoice=t=>t.replace(/([a-záéíóúñ])\s+(?=\d)/gi,'$1, ');
+function collapseRep(v){
+ const nz=t=>t.toLowerCase().replace(/[.,;¿?¡!]/g,''),w=v.split(/\s+/).filter(x=>nz(x)),n=w.map(nz);
+ if(n.length<2)return v;
+ let last=-1;n.forEach((x,i)=>{if(x===n[0])last=i});
+ if(last<=0)return v;
+ const T=n.slice(last),H=n.slice(0,last),memo={};
+ const can=p=>{if(p===H.length)return true;if(p in memo)return memo[p];let ok=false;
+  for(let L=1;L<=T.length&&p+L<=H.length&&!ok;L++){let m=true;for(let k=0;k<L;k++)if(H[p+k]!==T[k]){m=false;break}if(m&&can(p+L))ok=true}
+  return memo[p]=ok};
+ return can(0)?w.slice(last).join(' '):v}
+const PH0=$('#txt').placeholder;
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rec=null,hearing=false;
 function mic(){
  if(!SR){msg('b','Este navegador no permite dictar desde la página. Usá el micrófono del teclado del celular en el campo de texto: se anota igual.');return}
  if(hearing){rec.stop();return}
- rec=new SR();rec.lang='es-AR';rec.interimResults=true;rec.continuous=false;let fin='';
+ rec=new SR();rec.lang='es-AR';rec.interimResults=false;rec.continuous=false;let fin='';
  rec.maxAlternatives=1;
  rec.onresult=e=>{const r=e.results[e.results.length-1];$('#txt').value=r?r[0].transcript.trim():''};
  rec.onerror=e=>{hearing=false;$('#mc').textContent='🎤';msg('b',/not-allowed|service/.test(e.error)?'No pude usar el micrófono desde esta página. Probá con el micrófono del teclado.':'Falló el dictado ('+e.error+'). Probá de nuevo.')};
- rec.onend=()=>{hearing=false;$('#mc').textContent='🎤';const v=$('#txt').value.trim();if(v){$('#txt').value='';handle(splitVoice(numWords(v)))}};
- try{rec.start();hearing=true;$('#mc').textContent='⏹'}catch(e){msg('b','No pude iniciar el micrófono.')}}
+ rec.onend=()=>{hearing=false;$('#mc').textContent='🎤';$('#txt').placeholder=PH0;const v=collapseRep($('#txt').value.trim());if(v){$('#txt').value='';handle(splitVoice(numWords(v)))}};
+ try{rec.start();hearing=true;$('#mc').textContent='⏹';$('#txt').placeholder='Escuchando… hablá y hacé una pausa'}catch(e){msg('b','No pude iniciar el micrófono.')}}
 $('#mc').onclick=mic;
 $('#ex').onclick=()=>{const t=JSON.stringify(S),b=$('#bk');b.hidden=false;$('#bkgo').hidden=true;b.value=t;b.focus();b.select();
  const manual=()=>msg('b','Copiá el texto del cuadro (mantené presionado, Seleccionar todo, Copiar) y guardalo.');
@@ -776,5 +787,5 @@ $('#fm').addEventListener('submit',e=>{e.preventDefault();const v=$('#txt').valu
 msg('b','Contame qué comiste y lo sumo a tu objetivo. Ej: "200 g pollo cocido, 2 huevos, 1 taza de arroz cocido". Si no especificás crudo o cocido, asumo cocido (salvo el arroz, que es tu Molinos Ala y lo asumo crudo). Tocá un alimento del registro para editarlo o borrarlo, o escribí "borrar último".');
 render();
 </script><script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))</script>
-<div class="mu" id="ver" style="text-align:center;font-size:11px;padding:8px 0 16px">v4</div>
+<div class="mu" id="ver" style="text-align:center;font-size:11px;padding:8px 0 16px">v5</div>
 </body></html>
