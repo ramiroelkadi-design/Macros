@@ -753,7 +753,11 @@ function mic(){
  if(!SR){msg('b','Este navegador no permite dictar desde la página. Usá el micrófono del teclado del celular en el campo de texto: se anota igual.');return}
  if(hearing){rec.stop();return}
  rec=new SR();rec.lang='es-AR';rec.interimResults=true;rec.continuous=true;let fin='';
- rec.onresult=e=>{let tmp='';for(let i=e.resultIndex;i<e.results.length;i++){const r=e.results[i];if(r.isFinal)fin+=r[0].transcript+' ';else tmp+=r[0].transcript}$('#txt').value=(fin+tmp).trim()};
+ rec.maxAlternatives=1;
+ rec.onresult=e=>{const nz=t=>t.toLowerCase().replace(/[.,;¿?¡!]/g,'').replace(/\s+/g,' ').trim(),out=[];
+  for(let i=0;i<e.results.length;i++){const seg=e.results[i][0].transcript.trim(),n=nz(seg);if(!n)continue;const last=out.length?nz(out[out.length-1]):'';
+   if(last&&n.startsWith(last))out[out.length-1]=seg;else if(last&&last.startsWith(n))continue;else out.push(seg)}
+  $('#txt').value=out.join(' ')};
  rec.onerror=e=>{hearing=false;$('#mc').textContent='🎤';msg('b',/not-allowed|service/.test(e.error)?'No pude usar el micrófono desde esta página. Probá con el micrófono del teclado.':'Falló el dictado ('+e.error+'). Probá de nuevo.')};
  rec.onend=()=>{hearing=false;$('#mc').textContent='🎤';const v=$('#txt').value.trim();if(v){$('#txt').value='';handle(splitVoice(numWords(v)))}};
  try{rec.start();hearing=true;$('#mc').textContent='⏹'}catch(e){msg('b','No pude iniciar el micrófono.')}}
