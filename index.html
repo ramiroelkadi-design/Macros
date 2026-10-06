@@ -50,7 +50,7 @@ h3{font-size:14px;color:var(--mu);margin:12px 0 2px;font-weight:600}
 #food button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:10px;padding:8px 12px}#food .pri{background:var(--ac);color:#fff;border-color:var(--ac)}#food input,#food select{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:8px;min-width:0;width:100%}#food .row2 input{flex:1}#food .frm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}#food .frm label{font-size:12px;color:var(--mu);display:flex;flex-direction:column;gap:2px}#food .frm .w{grid-column:1/-1}#food .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}#food .bad{color:var(--bad);font-size:13px;margin-top:6px}
 </style></head><body>
 <div id="app">
-<div id="ver" style="display:flex;justify-content:flex-end;margin:2px 0 6px"><span style="font-size:12px;font-weight:600;color:var(--ac);border:1px solid var(--ac);border-radius:999px;padding:1px 10px">v6</span></div>
+<div id="ver" style="display:flex;justify-content:flex-end;margin:2px 0 6px"><span style="font-size:12px;font-weight:600;color:var(--ac);border:1px solid var(--ac);border-radius:999px;padding:1px 10px">v7</span></div>
 <header><div class="nav"><button id="pv" aria-label="Día anterior">‹</button><button id="dl" class="dl"></button><button id="nx" aria-label="Día siguiente">›</button><button id="hb">Historial</button><button id="sb">Sugerir</button><button id="fb">Alimentos</button></div><div class="card" id="sum">
  <div class="top"><div><span class="big" id="kc">0</span> <span class="mu" id="kg"></span></div><div class="mu" id="kr"></div></div>
  <div class="bar"><i id="kb"></i></div>
@@ -81,10 +81,10 @@ h3{font-size:14px;color:var(--mu);margin:12px 0 2px;font-weight:600}
 const $=s=>document.querySelector(s);
 const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 // alias,...|estado(c=cocido,r=crudo,n=n/a)|kcal|prot|carbos|grasas|gramos por unidad (por 100 g)
-const DB=`pechuga,pollo|c|165|31|0|3.6|0
-pechuga,pollo|r|120|22.5|0|2.6|0
-nalga,peceto,bife,lomo,carne|c|190|29|0|8|0
-nalga,peceto,bife,lomo,carne|r|130|21|0|5|0
+const DB=`pechuga,pollo,suprema,pechuga de pollo|c|165|31|0|3.6|0
+pechuga,pollo,suprema,pechuga de pollo|r|120|22.5|0|2.6|0
+nalga,bife,carne|c|190|29|0|8|0
+nalga,bife,carne|r|130|21|0|5|0
 carne picada,picada|c|250|26|0|15|0
 carne picada,picada|r|215|18|0|15|0
 asado,costilla|c|300|26|0|22|0
@@ -133,7 +133,7 @@ entrana|c|280|24|0|20|0
 matambre|c|230|26|0|14|0
 bondiola,cerdo|c|250|25|0|17|0
 muslo,pata muslo|c|190|26|0|9|0
-camaron|c|99|24|0.2|0.3|0
+camaron,langostino|c|99|24|0.2|0.3|0
 suprema|n|230|17|12|12|130
 milanesa de pollo|n|250|18|15|13|120
 milanesa napolitana|n|280|19|17|15|200
@@ -210,7 +210,63 @@ coca cola,gaseosa,coca|n|42|0|10.6|0|0
 coca zero|n|0|0|0|0|0
 cerveza|n|43|0.5|3.6|0|0
 vino|n|85|0.1|2.6|0|0
-jugo de naranja|n|45|0.7|10|0.2|0`.split('\n').map(l=>{const a=l.split('|');return{al:a[0].split(','),st:a[1],k:+a[2],p:+a[3],c:+a[4],f:+a[5],u:+a[6],cu:+a[7]||0,tz:+a[8]||0}});
+jugo de naranja|n|45|0.7|10|0.2|0
+cuadril,colita de cuadril,colita|r|135|21|0|5.5
+cuadril,colita de cuadril,colita|c|190|30|0|7.5
+peceto|r|120|22|0|3
+peceto|c|170|31|0|4.5
+bola de lomo,bola|r|125|21.5|0|4
+bola de lomo,bola|c|180|31|0|5.5
+lomo|r|150|21|0|7
+lomo|c|210|29|0|10
+bife de chorizo|r|190|20|0|12
+ojo de bife,bife ancho,ancho|r|210|19|0|15
+ojo de bife,bife ancho,ancho|c|280|26|0|19
+entrana|r|220|19|0|16
+vacio|r|230|18.5|0|17
+matambre|r|180|20|0|11
+asado,costilla|r|250|17|0|20
+osobuco|r|130|20|0|5
+osobuco|c|190|30|0|7
+paleta|r|140|20.5|0|6
+paleta|c|200|30|0|8.5
+roast beef,rosbif|r|130|21|0|5
+roast beef,rosbif|c|190|30|0|7.5
+falda|r|190|18|0|13
+falda|c|270|26|0|18
+higado,higado de vaca|r|135|20|3.9|3.6
+higado,higado de vaca|c|175|27|5|5
+corazon|r|112|17.7|0.1|3.9
+corazon|c|165|28|0.1|4.7
+rinon|r|99|17|0|3.1
+rinon|c|158|27|0|5
+lengua|r|224|15.7|3.7|16
+lengua|c|280|19|0|22
+muslo,pata muslo|r|125|19.5|0|4.5
+alitas,alita|r|205|17.5|0|14|35
+alitas,alita|c|290|27|0|20|35
+pavo,pechuga de pavo|r|110|23.5|0|1.5
+pavo,pechuga de pavo|c|150|30|0|2.5
+pato|r|135|19|0|6
+pato|c|200|24|0|11
+bondiola,cerdo|r|200|18|0|14
+lomo de cerdo,solomillo,solomillo de cerdo|r|120|21|0|3.5
+lomo de cerdo,solomillo,solomillo de cerdo|c|165|28|0|5
+carre de cerdo,carre|r|150|21|0|7
+carre de cerdo,carre|c|210|28|0|10
+chuleta de cerdo,chuleta,costeleta de cerdo,costeleta|r|140|21|0|6
+chuleta de cerdo,chuleta,costeleta de cerdo,costeleta|c|200|27|0|9
+costilla de cerdo,costillar de cerdo,costillitas de cerdo,ribs|r|235|16|0|19
+costilla de cerdo,costillar de cerdo,costillitas de cerdo,ribs|c|290|24|0|21
+cordero,pierna de cordero|r|135|20|0|5.5
+cordero,pierna de cordero|c|205|29|0|9
+chuleta de cordero,costilla de cordero,costeleta de cordero|r|215|16|0|17
+chuleta de cordero,costilla de cordero,costeleta de cordero|c|290|25|0|21
+conejo|r|135|20.5|0|5.5
+conejo|c|180|30|0|6
+trucha|r|119|20.5|0|3.5
+trucha|c|160|25|0|6.5
+camaron,langostino|r|85|20|0.2|0.5`.split('\n').map(l=>{const a=l.split('|');return{al:a[0].split(','),st:a[1],k:+a[2],p:+a[3],c:+a[4],f:+a[5],u:+a[6],cu:+a[7]||0,tz:+a[8]||0}});
 // por 100 g: fibra g, potasio mg, sodio mg, zinc mg, magnesio mg, vit C mg, B12 µg, calcio mg, hierro mg
 const MIC={};`pechuga_c|0|256|74|1|29|0|0.3|15|1
 pechuga_r|0|370|45|0.7|28|0|0.3|5|0.4
@@ -299,7 +355,69 @@ jugo de naranja|0.2|200|1|0.05|11|50|0|11|0.2
 avena tradicional morixe|11|430|0|4|177|0|0|54|4.7
 avena|11|430|0|4|177|0|0|54|4.7
 aceite de oliva zuccardi|0|1|0|0|0|0|0|1|0.6
-aceite|0|1|2|0|0|0|0|1|0.6`.split('\n').forEach(l=>{const a=l.split('|');MIC[a[0]]=a.slice(1).map(Number)});
+aceite|0|1|2|0|0|0|0|1|0.6
+cuadril_r|0|350|60|4.5|22|0|2.2|6|2
+cuadril_c|0|460|79|5.9|29|0|2.7|7.9|2.6
+peceto_r|0|350|60|4.5|22|0|2.2|6|2
+peceto_c|0|454|78|5.8|29|0|2.6|7.8|2.6
+bola de lomo_r|0|350|60|4.5|22|0|2.2|6|2
+bola de lomo_c|0|464|80|6|29|0|2.7|8|2.7
+lomo_r|0|350|60|4.5|22|0|2.2|6|2
+lomo_c|0|445|76|5.7|28|0|2.6|7.6|2.5
+bife de chorizo_r|0|300|60|4.2|19|0|2|8|1.9
+bife de chorizo_c|0|373|75|5.2|24|0|2.3|9.9|2.4
+ojo de bife_r|0|300|60|4.2|19|0|2|8|1.9
+ojo de bife_c|0|378|76|5.3|24|0|2.3|10|2.4
+entrana_r|0|300|60|4.2|19|0|2|8|1.9
+entrana_c|0|349|70|4.9|22|0|2.1|9.3|2.2
+vacio_r|0|300|60|4.2|19|0|2|8|1.9
+matambre_r|0|300|60|4.2|19|0|2|8|1.9
+matambre_c|0|359|72|5|23|0|2.2|9.6|2.3
+asado_r|0|300|60|4.2|19|0|2|8|1.9
+osobuco_r|0|350|60|4.5|22|0|2.2|6|2
+osobuco_c|0|467|80|6|29|0|2.7|8|2.7
+paleta_r|0|350|60|4.5|22|0|2.2|6|2
+paleta_c|0|467|80|6|29|0|2.7|8|2.7
+roast beef_r|0|350|60|4.5|22|0|2.2|6|2
+roast beef_c|0|460|79|5.9|29|0|2.7|7.9|2.6
+falda_r|0|300|60|4.2|19|0|2|8|1.9
+falda_c|0|399|80|5.6|25|0|2.5|11|2.5
+higado_r|0|313|69|4|18|1.3|59|5|4.9
+higado_c|0|389|86|5|22|1.2|67.7|6.2|6.1
+corazon_r|0|287|98|1.7|21|3.3|8.6|5|4.3
+corazon_c|0|383|131|2.3|28|3.3|10.6|6.7|5.7
+rinon_r|0|262|182|1.9|17|9.4|27.5|13|4.6
+rinon_c|0|350|243|2.5|23|9.5|33.9|17|6.1
+lengua_r|0|250|70|3.3|14|1|3.5|7|2.3
+lengua_c|0|278|78|3.7|16|0.8|3.6|7.8|2.6
+muslo_r|0|230|85|2|22|0|0.3|11|0.9
+muslo_c|0|282|104|2.5|27|0|0.3|13|1.1
+alitas_r|0|190|75|1.6|17|0|0.3|14|0.9
+alitas_c|0|253|100|2.1|23|0|0.4|19|1.2
+pavo_r|0|290|60|1.5|26|0|0.5|10|0.7
+pavo_c|0|341|70|1.8|31|0|0.5|12|0.8
+pato_r|0|270|70|2|20|0|0.4|11|2.7
+pato_c|0|314|81|2.3|23|0|0.4|13|3.1
+bondiola_r|0|330|55|2.2|20|0.5|0.6|8|0.9
+bondiola_c|0|422|70|2.8|26|0.5|0.7|10|1.2
+lomo de cerdo_r|0|380|55|1.9|24|0.5|0.7|5|0.9
+lomo de cerdo_c|0|466|67|2.3|29|0.5|0.8|6.1|1.1
+carre de cerdo_r|0|380|55|1.9|24|0.5|0.7|5|0.9
+carre de cerdo_c|0|466|67|2.3|29|0.5|0.8|6.1|1.1
+chuleta de cerdo_r|0|330|55|2.2|20|0.5|0.6|8|0.9
+chuleta de cerdo_c|0|390|65|2.6|24|0.5|0.7|9.5|1.1
+costilla de cerdo_r|0|330|55|2.2|20|0.5|0.6|8|0.9
+costilla de cerdo_c|0|440|73|2.9|27|0.5|0.7|11|1.2
+cordero_r|0|310|65|3.5|22|0|2.3|10|1.7
+cordero_c|0|414|87|4.7|29|0|2.8|13|2.3
+chuleta de cordero_r|0|270|60|3.2|19|0|2|12|1.4
+chuleta de cordero_c|0|360|80|4.3|25|0|2.5|16|1.9
+conejo_r|0|330|40|2|20|0|7.2|12|2.8
+conejo_c|0|440|53|2.7|27|0|8.9|16|3.7
+trucha_r|0|360|50|0.5|25|0|4.2|60|0.3
+trucha_c|0|404|56|0.6|28|0|4.4|67|0.3
+camaron_r|0|185|119|1.1|37|0|1.1|52|0.5
+camaron_c|0|204|131|1.2|41|0|1.1|57|0.6`.split('\n').forEach(l=>{const a=l.split('|');MIC[a[0]]=a.slice(1).map(Number)});
 // referencia: hombre adulto 33 años (NASEM/OMS); el 4º valor marca un límite máximo
 const MG=[['Fibra','g',38],['Potasio','mg',3400],['Sodio','mg',2000,1],['Zinc','mg',11],['Magnesio','mg',420],['Vitamina C','mg',90],['Vitamina B12','µg',2.4],['Calcio','mg',1000],['Hierro','mg',8],['Omega-3','g',1.6],['Omega-6','g',17],['Vitamina D','µg',15],['Folato','µg',400],['EPA','g',0.25],['DHA','g',0.25]];
 // omega-3 (ALA+EPA+DHA) y omega-6 en g por 100 g; alimentos con micros que no figuran acá se toman como ~0
@@ -368,7 +486,63 @@ espinaca_c|0.14|0.03
 brocoli_c|0.1|0.05
 lechuga|0.05|0.03
 aceite de oliva zuccardi|0.7|9
-aceite|0.76|9.8`.split('\n').forEach(l=>{const a=l.split('|');OM[a[0]]=[+a[1],+a[2]]});
+aceite|0.76|9.8
+cuadril_r|0.04|0.25
+cuadril_c|0.06|0.36
+peceto_r|0.04|0.25
+peceto_c|0.06|0.35
+bola de lomo_r|0.04|0.25
+bola de lomo_c|0.06|0.36
+lomo_r|0.04|0.25
+lomo_c|0.06|0.35
+bife de chorizo_r|0.1|0.4
+ojo de bife_r|0.1|0.4
+ojo de bife_c|0.14|0.55
+entrana_r|0.1|0.4
+vacio_r|0.1|0.4
+matambre_r|0.1|0.4
+asado_r|0.1|0.4
+osobuco_r|0.04|0.25
+osobuco_c|0.06|0.36
+paleta_r|0.04|0.25
+paleta_c|0.06|0.36
+roast beef_r|0.04|0.25
+roast beef_c|0.06|0.36
+falda_r|0.1|0.4
+falda_c|0.14|0.58
+higado_r|0.06|0.4
+higado_c|0.08|0.54
+corazon_r|0.1|0.5
+corazon_c|0.14|0.72
+rinon_r|0.1|0.4
+rinon_c|0.14|0.58
+lengua_r|0.1|0.5
+lengua_c|0.12|0.61
+muslo_r|0.1|1.2
+alitas_r|0.2|2.5
+alitas_c|0.29|3.62
+pavo_r|0.03|0.3
+pavo_c|0.04|0.38
+pato_r|0.15|1.5
+pato_c|0.19|1.89
+bondiola_r|0.08|1.8
+lomo de cerdo_r|0.05|0.5
+lomo de cerdo_c|0.07|0.67
+carre de cerdo_r|0.05|0.5
+carre de cerdo_c|0.07|0.67
+chuleta de cerdo_r|0.08|1.8
+chuleta de cerdo_c|0.1|2.31
+costilla de cerdo_r|0.08|1.8
+costilla de cerdo_c|0.12|2.61
+cordero_r|0.2|0.4
+cordero_c|0.29|0.58
+chuleta de cordero_r|0.3|0.7
+chuleta de cordero_c|0.43|1.01
+conejo_r|0.2|0.8
+conejo_c|0.29|1.16
+trucha_r|0.98|0.5
+trucha_c|1.2|0.61
+camaron_r|0.3|0.02`.split('\n').forEach(l=>{const a=l.split('|');OM[a[0]]=[+a[1],+a[2]]});
 const r2=n=>Math.round(n*100)/100;
 const r3=v=>Math.round(v*1000)/1000;
 const NX={};`pechuga_c|0.1|4|0|0
@@ -459,7 +633,68 @@ jugo de naranja|0|30|0|0
 avena tradicional morixe|0|30|0|0
 avena|0|30|0|0
 aceite de oliva zuccardi|0|0|0|0
-aceite|0|0|0|0`.split('\n').forEach(l=>{const a=l.split('|');NX[a[0]]=a.slice(1).map(Number)});
+aceite|0|0|0|0
+cuadril_r|0.1|8|0|0
+cuadril_c|0.1|7|0|0
+peceto_r|0.1|8|0|0
+peceto_c|0.1|7|0|0
+bola de lomo_r|0.1|8|0|0
+bola de lomo_c|0.1|7|0|0
+lomo_r|0.1|8|0|0
+lomo_c|0.1|7|0|0
+bife de chorizo_r|0.2|8|0|0
+bife de chorizo_c|0.2|7|0|0
+ojo de bife_r|0.2|8|0|0
+ojo de bife_c|0.2|7|0|0
+entrana_r|0.2|8|0|0
+entrana_c|0.2|7|0|0
+vacio_r|0.2|8|0|0
+matambre_r|0.2|8|0|0
+matambre_c|0.2|7|0|0
+asado_r|0.2|8|0|0
+osobuco_r|0.1|8|0|0
+osobuco_c|0.1|8|0|0
+paleta_r|0.1|8|0|0
+paleta_c|0.1|8|0|0
+roast beef_r|0.1|8|0|0
+roast beef_c|0.1|7|0|0
+falda_r|0.2|8|0|0
+falda_c|0.3|8|0|0
+higado_r|1.2|253|0|0
+higado_c|1.5|222|0|0
+corazon_r|0|3|0|0
+corazon_c|0|3|0|0
+rinon_r|0.5|98|0|0
+rinon_c|0.7|92|0|0
+lengua_r|0.1|4|0|0
+lengua_c|0.1|3|0|0
+muslo_r|0.1|6|0|0
+muslo_c|0.1|5|0|0
+alitas_r|0.1|4|0|0
+alitas_c|0.1|4|0|0
+pavo_r|0.1|7|0|0
+pavo_c|0.1|6|0|0
+pato_r|0.1|10|0|0
+pato_c|0.1|8|0|0
+bondiola_r|0.7|5|0|0
+bondiola_c|0.9|5|0|0
+lomo de cerdo_r|0.8|5|0|0
+lomo de cerdo_c|1|4|0|0
+carre de cerdo_r|0.8|5|0|0
+carre de cerdo_c|1|4|0|0
+chuleta de cerdo_r|0.7|5|0|0
+chuleta de cerdo_c|0.8|4|0|0
+costilla de cerdo_r|0.7|5|0|0
+costilla de cerdo_c|0.9|5|0|0
+cordero_r|0.1|7|0|0
+cordero_c|0.1|7|0|0
+chuleta de cordero_r|0.1|6|0|0
+chuleta de cordero_c|0.1|6|0|0
+conejo_r|0.1|8|0|0
+conejo_c|0.1|8|0|0
+trucha_r|6|10|0.18|0.52
+trucha_c|6.6|8|0.198|0.571
+camaron_r|0.1|3|0.15|0.12`.split('\n').forEach(l=>{const a=l.split('|');NX[a[0]]=a.slice(1).map(Number)});
 const mk3=(e,g)=>{const x=NX[e.al[0]+(e.st==='n'?'':'_'+e.st)];return x?x.map(v=>r3(v*g/100)):null};
 const mko=(e,g,m)=>{const o=OM[e.al[0]+(e.st==='n'?'':'_'+e.st)];return o?o.map(v=>r2(v*g/100)):(m?[0,0]:null)};
 const mk2=(e,g)=>{const m=MIC[e.al[0]+(e.st==='n'?'':'_'+e.st)];return m&&m.map(v=>r1(v*g/100))};
