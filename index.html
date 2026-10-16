@@ -1272,12 +1272,17 @@ function showOnboarding(){const w=el('div');
  const sk=el('button','btn','Ahora no');sk.type='button';sk.style.cssText='width:100%;margin-top:.75rem';sk.onclick=()=>closeSheet();w.append(sk);openSheet('Bienvenido/a',w)}
 function applyTheme(){const t=S.theme||'auto',r=document.documentElement;if(t==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',t);
  const m=document.querySelector('meta[name=theme-color]');if(m)requestAnimationFrame(()=>{m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||'#151513'})}
-function importText(t){try{const d=JSON.parse(t);if(!d||!d.days||!d.goals)throw 0;
+function importText(t){let why='el texto no es un JSON válido';try{
+ t=String(t).replace(/^\uFEFF/,'').replace(/[\u201C\u201D]/g,'"').trim();const i=t.indexOf('{'),j=t.lastIndexOf('}');
+ if(i<0||j<=i){why='no encontré los datos (tienen que empezar con { y terminar con })';throw 0}
+ let d;try{d=JSON.parse(t.slice(i,j+1))}catch(e){why='el texto está incompleto o cortado; volvé a exportar y copiá TODO';throw 0}
+ if(typeof d==='string')d=JSON.parse(d);
+ why='faltan los días o los objetivos';if(!d||!d.days||!d.goals)throw 0;why='error al cargar los datos';
  S.goals=d.goals;S.dg={...(S.dg||{}),...(d.dg||{})};
  Object.entries(d.days).forEach(([k,a])=>{const l=S.days[k]||(S.days[k]=[]);a.forEach(x=>{if(!l.some(y=>y.id===x.id))l.push(x)})});
  if(d.cf){S.cf=S.cf||{over:{},add:[]};Object.assign(S.cf.over=S.cf.over||{},d.cf.over||{});S.cf.add=S.cf.add||[];(d.cf.add||[]).forEach(a=>{if(!S.cf.add.some(y=>y.al[0]===a.al[0]&&y.st===a.st))S.cf.add.push(a)});applyCF()}
  if(d.profile&&!S.profile)S.profile=d.profile;if(d.mgo)S.mgo={...d.mgo,...(S.mgo||{})};
- save();return{ok:true}}catch(e){return{ok:false,err:'Los datos no son válidos. Pegá el texto completo que exportaste.'}}}
+ save();return{ok:true}}catch(e){return{ok:false,err:'No pude importar: '+why+'.'}}}
 function dataSheet(imp,text){const w=el('div'),ta=el('textarea','in'),err=el('div','mu bad');ta.rows=8;ta.style.cssText='font-family:monospace;font-size:.75rem;min-height:9rem';ta.value=text||'';
  ta.setAttribute('aria-label',imp?'Pegá acá los datos exportados':'Datos para copiar');err.setAttribute('role','alert');
  w.append(el('p','mu',imp?'Pegá acá el texto que exportaste de la otra app.':'Seleccioná todo el texto, copialo y guardalo en un lugar seguro.'),ta,err);
