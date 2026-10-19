@@ -1361,9 +1361,9 @@ function mic(){
  rec=new SR();rec.lang='es-AR';rec.interimResults=false;rec.continuous=false;rec.maxAlternatives=1;
  rec.onresult=e=>{const r=e.results[e.results.length-1];$('#txt').value=r?r[0].transcript.trim():''};
  rec.onerror=e=>{hearing=false;setMic(false);$('#txt').placeholder=PH0;msg('b',/not-allowed|service/.test(e.error)?'No pude usar el micrófono desde esta página. Probá con el micrófono del teclado.':'Falló el dictado ('+e.error+'). Probá de nuevo.')};
- // al terminar NO se envía solo: queda el texto en el campo para revisarlo y corregirlo
+ // al terminar se carga directo; el aviso trae Deshacer y se puede tocar el ítem para corregirlo
  rec.onend=()=>{hearing=false;setMic(false);$('#txt').placeholder=PH0;const v=collapseRep($('#txt').value.trim());
-  if(v){$('#txt').value=splitVoice(numWords(v));autoGrow();$('#txt').focus();toast('Revisá el texto y tocá Enviar. Podés corregirlo antes.')}};
+  $('#txt').value='';autoGrow();if(v)handle(splitVoice(numWords(v)))};
  try{rec.start();hearing=true;setMic(true);$('#txt').placeholder='Escuchando… hablá y hacé una pausa'}catch(e){msg('b','No pude iniciar el micrófono.')}}
 $('#mc').onclick=mic;
 $('#send').innerHTML=ICON_SEND;setMic(false);
